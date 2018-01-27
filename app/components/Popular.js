@@ -1,17 +1,18 @@
-var React = require('react');
-var PropTypes = require('prop-types');
-var api = require('../utils/api');
-var Loading = require('./Loading');
+const React = require('react');
+const PropTypes = require('prop-types');
+const api = require('../utils/api');
+const Loading = require('./Loading');
 
-function SelectLanguage (props) {
-  var languages = ['All', 'JavaScript', 'Ruby', 'Java', 'CSS', 'Python'];
+function SelectLanguage ({ selectedLanguage, onSelect }) {
+  const languages = ['All', 'JavaScript', 'Ruby', 'Java', 'CSS', 'Python'];
+
   return (
     <ul className='languages'>
-      {languages.map(function (lang) {
+      {languages.map((lang) => {
         return (
           <li
-            style={lang === props.selectedLanguage ? {color: '#d0021b'} : null}
-            onClick={props.onSelect.bind(null, lang)}
+            style={lang === selectedLanguage ? {color: '#d0021b'} : null}
+            onClick={() => onSelect(lang)}
             key={lang}>
               {lang}
           </li>
@@ -21,10 +22,10 @@ function SelectLanguage (props) {
   )
 }
 
-function RepoGrid (props) {
+function RepoGrid ({ repos }) {
   return (
     <ul className='popular-list'>
-      {props.repos.map(function (repo, index) {
+      {repos.map((repo, index) => {
         return (
           <li key={repo.name} className='popular-item'>
             <div className='popular-rank'>#{index + 1}</div>
@@ -70,31 +71,20 @@ class Popular extends React.Component {
     this.updateLanguage(this.state.selectedLanguage)
   }
   updateLanguage(lang) {
-    this.setState(function () {
-      return {
-        selectedLanguage: lang,
-        repos: null
-      }
-    });
+    this.setState(() => ({ selectedLanguage: lang, repos: null }));
 
     api.fetchPopularRepos(lang)
-      .then(function (repos) {
-        this.setState(function () {
-          return {
-            repos: repos
-          }
-        });
-      }.bind(this));
+      .then((repos) => this.setState(() => ({ repos })) );
   }
   render() {
+    const { selectedLanguage, repos } = this.state;
+
     return (
       <div>
         <SelectLanguage
-          selectedLanguage={this.state.selectedLanguage}
+          selectedLanguage={selectedLanguage}
           onSelect={this.updateLanguage} />
-        {!this.state.repos
-          ? <Loading />
-          : <RepoGrid repos={this.state.repos} />}
+        {!repos ? <Loading /> : <RepoGrid repos={repos} />}
       </div>
     )
   }
